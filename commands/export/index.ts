@@ -17,6 +17,8 @@ let root = ".";
 let folder = "src";
 let atelier = false;
 let doc2file = docname => docname;
+let noStorage = false;
+let dontExportIfNoChanges = false;
 
 // Export one document
 const ExportDoc = (doc, next) => ({ error, data }) => {
@@ -33,10 +35,58 @@ const ExportDoc = (doc, next) => ({ error, data }) => {
     doc.fileName || [root, folder, doc.cat, filename].join(path.sep);
   const folders = path.dirname(fullname);
 
-  if (!fs.existsSync(folders)) mkdir(folders);
-  fs.writeFileSync(fullname, (content || []).join("\n"));
-  log(`${doc.name} -> ${fullname}. ${status} `);
-  if (next && typeof next === "function") next();
+  let contentLen = content.length;
+  
+  const promise = new Promise((resolve, reject) => {
+    if(noStorage) {
+      // get only the storage xml for the doc.
+      api.getDoc(encodeURI(doc.name)+'?storageOnly=1', (storageError, storageData) => {
+        if(storageError) {
+          log(`${JSON.stringify(storageError)}\n`);
+          reject(storageError);
+          return;
+        }
+        const storageContent = storageData.result.content;
+        
+        if(storageContent.length>1 && storageContent[0]) {
+          const storageContentString = storageContent.join("\n");
+          const contentString = content.join("\n");
+          
+          // find and replace the docs storage section with ''
+          resolve({'found': contentString.indexOf(storageContentString) >= 0,  'content': contentString.replace(storageContentString, '')});
+        } else {
+          resolve({'found': false});
+        }
+      });
+    }else{
+      resolve({'found': false});
+    }
+  });
+  promise.then((res:any) => {
+    let joinedContent = (content || []).join("\n").toString('utf8');
+    let isSkipped = '';
+
+    if(res.found) {
+      joinedContent = res.content.toString('utf8');
+    }
+
+    if (!fs.existsSync(folders)) mkdir(folders);
+    if (dontExportIfNoChanges && fs.existsSync(fullname)) {
+      const existingContent = fs.readFileSync(fullname, "utf8");
+      // stringify to harmonise the text encoding.
+      if (JSON.stringify(joinedContent) != JSON.stringify(existingContent)) {
+        fs.writeFileSync(fullname, joinedContent);
+      } else {
+        isSkipped = 'skipped - no changes.';
+      }
+    } else {
+      fs.writeFileSync(fullname, joinedContent);
+    }
+    
+    log(`${doc.name} -> ${fullname}. ${status} ${isSkipped}`);
+    if (next && typeof next === "function") next();
+  });
+  
 };
 
 const doclist = ({ error, data }) => {
@@ -73,7 +123,7 @@ module.exports = env => {
   const init = () => {
     let options;
     ({ api, log, options } = env); //env - environment
-    ({ root, folder, atelier, category, generated, filter } = options());
+    ({ root, folder, atelier, category, generated, filter, noStorage, dontExportIfNoChanges } = options());
     doc2file = atelier ? asAtelier : doc => doc;
   };
   init();

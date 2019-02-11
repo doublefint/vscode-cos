@@ -1,7 +1,7 @@
 {
   "name": "vscode-cos",
-  "displayName": "Caché ObjectScript",
-  "description": "Caché ObjectScript language support for Visual Studio Code",
+  "displayName": "Cachï¿½ ObjectScript",
+  "description": "Cachï¿½ ObjectScript language support for Visual Studio Code",
   "version": "0.6.1",
   "icon": "images/logo.png",
   "categories": [
@@ -231,6 +231,16 @@
           "type": "boolean",
           "default": true,
           "description": "Show or hide the Explorer."
+        },
+        "cos.export.noStorage": {
+          "description": "Strip the storage xml on export.  (Useful for multiple systems)",
+          "type": "boolean",
+          "default": false
+        },
+        "cos.export.dontExportIfNoChanges": {
+          "description": "Don't update the local file on export if the content is identical to the server code",
+          "type": "boolean",
+          "default": false
         }
       }
     },
