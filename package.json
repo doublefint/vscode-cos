@@ -1,11 +1,11 @@
 {
   "name": "vscode-cos",
-  "displayName": "Caché ObjectScript",
+  "displayName": "Caché ObjectScript (deprecated)",
   "description": "Caché ObjectScript language support for Visual Studio Code",
   "version": "0.6.1",
   "icon": "images/logo.png",
   "categories": [
-    "Languages",
+    "Programming Languages",
     "Other"
   ],
   "repository": {
