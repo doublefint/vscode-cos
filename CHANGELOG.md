@@ -1,5 +1,10 @@
 # Change Log
 
+## [0.6.2]
+### Added
+- Add "Deprecated"
+
+
 ## [0.6.0]
 ### Added
 - Add "View others files" with shortcut
